@@ -5,7 +5,7 @@ use std.textio.all;
 entity hello_world is
 end hello_world;
 
-architecture sim of hello_world is
+architecture BEHAV of hello_world is
 begin
 
   process begin
@@ -13,4 +13,4 @@ begin
     wait;
   end process;
 
-end sim;
+end BEHAV;

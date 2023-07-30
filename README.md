@@ -30,3 +30,9 @@ python3 -m pip install flake8 pycodestyle black pydantic opencv-python
 - 02: Search Algorithms
 - 03: Graphs
 - 04: Hashing
+
+
+
+## TODO:
+
+- Block RAM initialization: read and write 00_introduction/05_bram_init

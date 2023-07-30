@@ -2,8 +2,8 @@
 GHDL=ghdl
 FLAGS="--std=08"
 
-SOURCE_FILES=hello.vhd
-TOP_ENTITY=hello_world
+SOURCE_FILES=file_writer.vhd
+TOP_ENTITY=file_writer
 
 
 all: 
@@ -12,4 +12,4 @@ all:
 	$(GHDL) -r $(FLAGS) $(TOP_ENTITY) --wave=wave.ghw --stop-time=1us
 
 clean:
-	rm wave.ghw *.cf
+	rm -f wave.ghw *.cf output_file.txt
