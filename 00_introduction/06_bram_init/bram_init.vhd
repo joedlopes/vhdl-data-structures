@@ -66,7 +66,7 @@ architecture behav of bram_init is
 
             we       : in  std_logic;
             waddr    : in  std_logic_vector(7 downto 0);
-            wdata    : out std_logic_vector(7 downto 0);
+            wdata    : in std_logic_vector(7 downto 0);
 
             raddr    : in  std_logic_vector(7 downto 0);
             rdata    : out std_logic_vector(7 downto 0));
@@ -120,76 +120,89 @@ begin
         end if;
     end process;
 
-    process (clk, pr_state)
-        variable idx : integer range 0 to 256 := 0;
+    process (clk)
+        variable idx : integer range 0 to 256;
         variable w_data : std_logic_vector(7 downto 0);
         variable str1: string(1 to 8);
         variable text_line : line;
     begin
-        if falling_edge(clk) and rst = '0' then
-
-            if pr_state = state_idle then
-                next_state <= state_load1;
-                we <= '0';
-                w_data := "00100011";
-                idx := 33;
-            elsif pr_state = state_load1 then -- prepare to load from file
-                idx := 0;
-                we <= '0';
-                next_state <= state_load2;
-            elsif pr_state = state_load2 then -- read line by line
-                we <= '1';
-
-                if not endfile(in_text_file) then
-                    readline(in_text_file, text_line);
-                    read(text_line, str1);
-                    for I in 1 to 8 loop
-                        if str1(I) = '0' then
-                            w_data(8 - I) := '0';
-                        else
-                            w_data(8 - I) := '1';
-                        end if;
-                    end loop;
-                end if;
+        if falling_edge(clk) then
+            if rst = '0' then
+                if pr_state = state_idle then
+                    next_state <= state_load1;
+                    we <= '0';
+                    w_data := "00100011";
+                    idx := 33;
+                elsif pr_state = state_load1 then -- prepare to load from file
+                    idx := 0;
+                    we <= '0';
+                    w_data := "00100011";
+                    next_state <= state_load2;
+                elsif pr_state = state_load2 then -- read line by line
+                    we <= '1';
+                    idx := 0;
+                    
+                    if not endfile(in_text_file) then
+                        readline(in_text_file, text_line);
+                        read(text_line, str1);
+                        w_data := str_to_slv(str1);
+                    else
+                        w_data := "00100011";
+                    end if;
+                    
+                    next_state <= state_load3;
                 
-                next_state <= state_load3;
-            
-            elsif pr_state = state_load3 then -- read line by line
+                elsif pr_state = state_load3 then -- read line by line
+                    
+                    we <= '1';
+
+                    if not endfile(in_text_file) then
+                        readline(in_text_file, text_line);
+                        read(text_line, str1);
+                        w_data := str_to_slv(str1);
+                    else
+                        w_data := "00100011";
+                    end if;
+                    
+                    if idx < 255 then
+                        idx := idx + 1;
+                        next_state <= state_load3; 
+                    else
+                        we <= '0';
+                        idx := 0;
+                        next_state <= state_save1;                    
+                    end if;
                 
-                we <= '1';
-
-                if not endfile(in_text_file) then
-                    readline(in_text_file, text_line);
-                    read(text_line, str1);
-
-                    w_data := str_to_slv(str1);
-
-                end if;
+                elsif pr_state = state_save1 then -- prepare to write to file
+                    idx := 0;
+                    we <= '0';
+                    next_state <= state_save2;
+                    w_data := "00100011";
                 
-                if idx < 255 then
-                    idx := idx + 1;
+                elsif pr_state = state_save2 then -- write to file
+                    
+                    write(out_text_file, slv_to_string(rdata) & LF);
+                    w_data := "00100011";
+
+                    if idx < 255 then
+                        idx := idx + 1;
+                        next_state <= state_save2;
+                    else
+                        idx := 0;
+                        next_state <= state_done;
+                    end if;
+                    we <= '0';  
                 else
                     we <= '0';
                     idx := 0;
-                    next_state <= state_save1;                    
-                end if;
-            
-            elsif pr_state = state_save1 then -- prepare to write to file
+                    next_state <= state_done;   
+                    w_data := "00100011"; 
+                end if; 
+
+            else
                 idx := 0;
-                we <= '0';
-                next_state <= state_save2;
-            
-            elsif pr_state = state_save2 then -- write to file
-                
-                write(out_text_file, slv_to_string(rdata) & LF);
-
-                if idx < 255 then
-                    idx := idx + 1;
-                else
-                    next_state <= state_done;
-                end if;                
-            end if; 
-
+                next_state <= state_idle;
+            end if;
         end if;
 
         out_idx <= std_logic_vector(to_unsigned(idx, out_idx'length));
