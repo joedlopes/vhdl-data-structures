@@ -1,5 +1,11 @@
 
 GHDL=ghdl
+
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+   GHDL=arch -x86_64 ../../.macos/ghdl/bin/ghdl
+endif
+
 FLAGS="--std=08"
 
 SOURCE_FILES=bram_test.vhd block_ram.vhd
