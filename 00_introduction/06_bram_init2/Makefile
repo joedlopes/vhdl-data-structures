@@ -1,0 +1,24 @@
+
+GHDL=ghdl
+
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+   GHDL=arch -x86_64 ../../.macos/ghdl/bin/ghdl
+endif
+
+
+FLAGS="--std=08"
+
+#SOURCE_FILES=bram_init.vhd block_ram.vhd
+SOURCE_FILES=fsm_tb.vhd
+TOP_ENTITY=fsm_tb
+
+
+all: 
+	python3 gen_input_file.py
+	$(GHDL) -a $(FLAGS) $(SOURCE_FILES)
+	$(GHDL) -e $(FLAGS) $(TOP_ENTITY)
+	$(GHDL) -r $(FLAGS) $(TOP_ENTITY) --wave=wave.ghw --stop-time=40us
+
+clean:
+	rm -f wave.ghw *.cf input_file.txt output_file.txt
