@@ -9,14 +9,15 @@ endif
 
 FLAGS="--std=08"
 
-SOURCE_FILES=mux_bram_3.vhd tb_mux.vhd
-TOP_ENTITY=tb_mux
+SOURCE_FILES=tb_fsm_bram.vhd block_ram.vhd mux_bram_3.vhd bram_loader.vhd bram_export.vhd
+TOP_ENTITY=tb_fsm_bram
 
 
-all: 
+all:
+	python3 gen_input_file.py
 	$(GHDL) -a $(FLAGS) $(SOURCE_FILES)
 	$(GHDL) -e $(FLAGS) $(TOP_ENTITY)
 	$(GHDL) -r $(FLAGS) $(TOP_ENTITY) --wave=wave.ghw --stop-time=40us
 
 clean:
-	rm -f wave.ghw *.cf 
+	rm -f wave.ghw *.cf input_file.txt output_file.txt
