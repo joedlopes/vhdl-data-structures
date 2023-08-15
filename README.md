@@ -72,4 +72,3 @@ python3 -m pip install flake8 pycodestyle black pydantic opencv-python
 - 04: Graphs
 - 05: Hashing
 - 06: Compression
-
