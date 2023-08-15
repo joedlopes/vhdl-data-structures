@@ -66,8 +66,10 @@ python3 -m pip install flake8 pycodestyle black pydantic opencv-python
 ## Course
 
 - 00: Introduction
-- 01: Sorting Algorithms
-- 02: Search Algorithms
-- 03: Graphs
-- 04: Hashing
+- 01: Structures
+- 02: Sorting Algorithms
+- 03: Search Algorithms
+- 04: Graphs
+- 05: Hashing
+- 06: Compression
 
