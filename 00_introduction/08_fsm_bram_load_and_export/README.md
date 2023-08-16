@@ -19,12 +19,12 @@ A state machine controls the stages, and for each stage there are
 other state machines or logic running.
 
 
-Each stage should have an "ENA" enable input and a "VALID" output.
+Each stage should have an "ENA" enable input and a "RDY" output.
 
 When ENA is activated (rising edge), the respective should start. 
 If ENA is low, the circuit will be in a reset state.
 
-When it successfully finishes, the "VALID" signal should be set to high.
+When it successfully finishes, the "RDY" signal should be set to high.
 
 
 ## States

@@ -2,11 +2,11 @@ library ieee;
 
 use ieee.std_logic_1164.all;
 
-entity tb_fsm_bram is
+entity tb_fsm is
 
 end entity;
 
-architecture behav of tb_fsm_bram is
+architecture behav of tb_fsm is
     
     signal clk: std_logic := '0';
     signal rst: std_logic := '1';
@@ -100,12 +100,34 @@ architecture behav of tb_fsm_bram is
 
     -- DUT
 
-    signal dut_we : std_logic := '0';
+    signal dut_clk              : std_logic;
+    signal dut_ena              : std_logic;
+    signal dut_rdy              : std_logic;
+    signal dut_success          : std_logic;
+    signal dut_target_value     : std_logic_vector(7 downto 0) := "00011100";
+
+    signal dut_we    : std_logic                    := '0';
     signal dut_waddr : std_logic_vector(7 downto 0) := "00001111";
     signal dut_wdata : std_logic_vector(7 downto 0) := "00001111";
     signal dut_raddr : std_logic_vector(7 downto 0) := "00001111";
     signal dut_rdata : std_logic_vector(7 downto 0) := "00001111";
 
+    component linear_search is
+        port(
+            clk           : in   std_logic;
+            ena           : in   std_logic;
+            rdy           : out  std_logic;
+            
+            success       : out  std_logic; -- result in br
+            target_value  : in   std_logic_vector(7 downto 0);
+    
+            bram_we       : out  std_logic;
+            bram_waddr    : out  std_logic_vector(7 downto 0);
+            bram_wdata    : out  std_logic_vector(7 downto 0);
+            bram_raddr    : out  std_logic_vector(7 downto 0);
+            bram_rdata    : in   std_logic_vector(7 downto 0)
+        );
+    end component;
 
 begin
     -- BRAM mapping
@@ -144,6 +166,24 @@ begin
     );
 
     export_clk <= clk;
+
+    -- DUT mapping
+    DUT1: linear_search PORT MAP(
+        clk           => dut_clk,
+        ena           => dut_ena,
+        rdy           => dut_rdy,
+        
+        success       => dut_success,
+        target_value  => dut_target_value,
+
+        bram_we       => dut_we,
+        bram_waddr    => dut_waddr,
+        bram_wdata    => dut_wdata,
+        bram_raddr    => dut_raddr,
+        bram_rdata    => dut_rdata
+    );
+
+    dut_clk <= clk;
 
     -- MUX3 BRAM mapping
 
@@ -189,6 +229,7 @@ begin
             CURRENT_STATE <= STATE_IDLE;
             loader_ena <= '0';
             export_ena <= '0';
+            dut_ena <= '0';
             sel <= "11";
 
         elsif rising_edge(clk) then
@@ -199,6 +240,7 @@ begin
                     CURRENT_STATE <= LOADER_PREPARE;
                     loader_ena <= '0';
                     export_ena <= '0';
+                    dut_ena <= '0';
                     sel <= "11";
                     
                 -- loader ------------------------------------------------------
@@ -206,12 +248,14 @@ begin
                     CURRENT_STATE <= LOADER_RUN;
                     loader_ena <= '1';
                     export_ena <= '0';
+                    dut_ena <= '0';
                     sel <= "00";
 
                 when LOADER_RUN =>
 
                     loader_ena <= '1';
                     export_ena <= '0';
+                    dut_ena <= '0';
                     sel <= "00";
 
                     if loader_rdy = '1' then
@@ -224,6 +268,7 @@ begin
                     CURRENT_STATE <= DUT_PREPARE;
                     loader_ena <= '0';
                     export_ena <= '0';
+                    dut_ena <= '0';
                     sel <= "11";
                 
                 -- dut ---------------------------------------------------------
@@ -231,18 +276,27 @@ begin
                     CURRENT_STATE <= DUT_RUN;
                     loader_ena <= '0';
                     export_ena <= '0';
+                    dut_ena <= '1';
                     sel <= "01";
 
                 when DUT_RUN =>
                     CURRENT_STATE <= DUT_DONE;
                     loader_ena <= '0';
                     export_ena <= '0';
+                    dut_ena <= '1';
                     sel <= "01";
+
+                    if dut_rdy = '1' then
+                        CURRENT_STATE <= DUT_DONE;
+                    else
+                        CURRENT_STATE <= DUT_RUN;                    
+                    end if;
 
                 when DUT_DONE =>
                     CURRENT_STATE <= EXPORT_RUN;
                     loader_ena <= '0';
                     export_ena <= '0';
+                    dut_ena <= '0';
                     sel <= "11";
 
                 -- export ------------------------------------------------------
@@ -251,12 +305,14 @@ begin
                     CURRENT_STATE <= EXPORT_RUN;
                     loader_ena <= '0';
                     export_ena <= '1';
+                    dut_ena <= '0';
                     sel <= "10";
 
                 when EXPORT_RUN =>
                     CURRENT_STATE <= EXPORT_DONE;
                     loader_ena <= '0';
                     export_ena <= '1';
+                    dut_ena <= '0';
                     sel <= "10";
 
                     if export_rdy   = '1' then
@@ -269,6 +325,7 @@ begin
                     CURRENT_STATE <= STATE_END;
                     loader_ena <= '0';
                     export_ena <= '0';
+                    dut_ena <= '0';
                     sel <= "11";
 
                 -- done ------------------------------------------------------
@@ -277,6 +334,7 @@ begin
                     
                     loader_ena <= '0';
                     export_ena <= '0';
+                    dut_ena <= '0';
                     sel <= "11";
             end case;
 
