@@ -9,7 +9,7 @@ endif
 
 FLAGS="--std=08"
 
-SOURCE_FILES=tb_fsm.vhd block_ram.vhd mux_bram_3.vhd bram_loader.vhd bram_export.vhd linear_search_max.vhd
+SOURCE_FILES=tb_fsm.vhd block_ram.vhd mux_bram_3.vhd bram_loader.vhd bram_export.vhd bubble_sort.vhd
 TOP_ENTITY=tb_fsm
 
 
@@ -17,7 +17,7 @@ all:
 	python3 gen_input_file.py
 	$(GHDL) -a $(FLAGS) $(SOURCE_FILES)
 	$(GHDL) -e $(FLAGS) $(TOP_ENTITY)
-	$(GHDL) -r $(FLAGS) $(TOP_ENTITY) --wave=wave.ghw --stop-time=40us
-
+	$(GHDL) -r $(FLAGS) $(TOP_ENTITY) --wave=wave.ghw --stop-time=10ms
+	python3 check_output_file.py
 clean:
 	rm -f wave.ghw *.cf input_file.txt output_file.txt
