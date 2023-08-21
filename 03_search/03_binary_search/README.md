@@ -12,24 +12,70 @@ are already sorted.
 As follows a basic implementation of the binary search algorith:
 
 ```python
-def binary_search(bram: List[int], 
-                  idx_left: int,
-                  idx_right: int,
-                  target: int,
+def binary_search(
+    bram: List[int],
+    idx_left: int,
+    idx_right: int,
+    target: int,
 ) -> Tuple[int, int]:
-    idx_middle: int
+    # state: - prepare
+    idx_middle: int = idx_left
 
-    while idx_left != idx_right:
-        idx_middle = (idx_right - idx_left) // 2
-        
-        if target < bram[idx_middle]:
-            idx_right = idx_middle
-        elif target > bram[idx_middle]:
-            idx_left = idx_mid
-        else:
+    # state: - read 0 
+    if target <= bram[0]:
+        return 0, bram[0]
+
+    # state: - read n
+    elif target > bram[len(bram)-1]:
+        return len(bram)-1, bram[len(bram)-1]
+    
+    # state: run search
+    while idx_left < idx_right - 2:
+        # tick
+        idx_middle = (idx_left >> 1) + (idx_right >> 1)
+        val_mid = bram[idx_middle]
+
+        # tick
+        if target > val_mid:
             idx_left = idx_middle
+        elif target < val_mid:
             idx_right = idx_middle
+        else:
+            idx_right = idx_middle  # when equal, search for left most
+    
+    # when condition loop of run state is false
+    if idx_middle == idx_left:
+        idx_middle = idx_middle + 1
+    elif idx_middle == idx_right:
+        idx_middle = idx_middle - 1
 
+    # tick: state - check middle
+    val_mid = bram[idx_middle]
+    if target < val_mid:
+        idx_right = idx_middle
+    else:
+        idx_left = idx_middle
+
+    # tick: check left
+    val_min = bram[idx_left]
+    if val_min == target:
+        return idx_left, bram[idx_left]
+
+    # tick: check right
+    val_max = bram[idx_right]
+    if val_max == target:
+        idx_left = idx_right
+        return idx_left, bram[idx_left]
+
+    # tick: sub -> add one cycle to ensure timing
+    A = target - val_min
+    B = val_max - target
+
+    # tick: check closest state
+    if A > B:
+        idx_left = idx_right
+
+    # tick: ready state
     return idx_left, bram[idx_left]
 ```
 

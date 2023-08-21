@@ -57,7 +57,6 @@ def binary_search(
     target: int,
 ) -> Tuple[int, int]:
     idx_middle: int = 0
-    cycles: int = 0
 
     if target <= bram[0]:
         print("LOW RANGE")
@@ -88,7 +87,6 @@ def binary_search(
             idx_right = idx_middle
 
     print("OUT")
-    # idx_middle = (idx_left >> 1) + (idx_right >> 1)
     if idx_middle == idx_left:
         idx_middle = idx_middle + 1
     elif idx_middle == idx_right:
@@ -96,11 +94,8 @@ def binary_search(
 
     print(f"!rEND[{idx_left:03d}, {idx_middle:03d}, {idx_right:03d}]")
     print()
-
-    # val_left = bram[idx_left]
     val_mid = bram[idx_middle]
-    # val_right = bram[idx_right]
-    
+
     if target < val_mid:
         idx_right = idx_middle
     else:
@@ -108,28 +103,22 @@ def binary_search(
 
     print(f"!xEND[{idx_left:03d}, {idx_middle:03d}, {idx_right:03d}]")
 
-    idx_min = idx_left
-    idx_max = idx_right
-    # idx_min = min(idx_left, min(idx_middle, idx_right))
-    # idx_max = max(idx_left, max(idx_middle, idx_right))
+    val_min = bram[idx_left]
+    if val_min == target:
+        return idx_left, bram[idx_left]
 
-    print("minmax", idx_min, idx_max)
-    val_min = bram[idx_min]
-    val_max = bram[idx_max]
+    val_max = bram[idx_right]
+    if val_max == target:
+        idx_left = idx_right
+        return idx_left, bram[idx_left]
+
     print("val", val_min, val_max)
 
-    if val_min == target:
-        idx_left = idx_min
-    elif val_max == target:
-        idx_left = idx_max
-    else:
-        A = target - val_min
-        B = val_max - target
+    A = target - val_min
+    B = val_max - target
 
-        if A <= B:
-            idx_left = idx_min
-        else:
-            idx_left = idx_max
+    if A > B:
+        idx_left = idx_right
 
     return idx_left, bram[idx_left]
 
