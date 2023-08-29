@@ -103,28 +103,30 @@ architecture behav of tb_fsm is
     signal dut_clk              : std_logic;
     signal dut_ena              : std_logic;
     signal dut_rdy              : std_logic;
-    signal dut_max_value        : std_logic_vector(7 downto 0);
+    signal dut_found            : std_logic;
+    signal dut_target_value     : std_logic_vector(7 downto 0) := "00110001";
 
-    signal dut_we    : std_logic                    := '0';
-    signal dut_waddr : std_logic_vector(7 downto 0) := "00001111";
-    signal dut_wdata : std_logic_vector(7 downto 0) := "00001111";
-    signal dut_raddr : std_logic_vector(7 downto 0) := "00001111";
-    signal dut_rdata : std_logic_vector(7 downto 0) := "00001111";
+    signal dut_we               : std_logic                    := '0';
+    signal dut_waddr            : std_logic_vector(7 downto 0) := "00001111";
+    signal dut_wdata            : std_logic_vector(7 downto 0) := "00001111";
+    signal dut_raddr            : std_logic_vector(7 downto 0) := "00001111";
+    signal dut_rdata            : std_logic_vector(7 downto 0) := "00001111";
 
-    component linear_search_max is
+    component binary_search is
         port(
             clk           : in   std_logic;
             ena           : in   std_logic;
             rdy           : out  std_logic;
-            
-            max_value     : out  std_logic_vector(7 downto 0);
-    
+            found         : out  std_logic; -- found exact value
+
+            target_value  : in  std_logic_vector(7 downto 0);
+
             bram_we       : out  std_logic;
             bram_waddr    : out  std_logic_vector(7 downto 0);
             bram_wdata    : out  std_logic_vector(7 downto 0);
+
             bram_raddr    : out  std_logic_vector(7 downto 0);
-            bram_rdata    : in   std_logic_vector(7 downto 0)
-        );
+            bram_rdata    : in   std_logic_vector(7 downto 0));
     end component;
 
 begin
@@ -166,12 +168,13 @@ begin
     export_clk <= clk;
 
     -- DUT mapping
-    DUT1: linear_search_max PORT MAP(
+    DUT1: binary_search PORT MAP(
         clk           => dut_clk,
         ena           => dut_ena,
         rdy           => dut_rdy,
+        found         => dut_found,
         
-        max_value     => dut_max_value,
+        target_value  => dut_target_value,
 
         bram_we       => dut_we,
         bram_waddr    => dut_waddr,

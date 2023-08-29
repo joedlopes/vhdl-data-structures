@@ -9,7 +9,7 @@ endif
 
 FLAGS="--std=08"
 
-SOURCE_FILES=tb_fsm.vhd block_ram.vhd mux_bram_3.vhd bram_loader.vhd bram_export.vhd linear_search_max.vhd
+SOURCE_FILES=tb_fsm.vhd block_ram.vhd mux_bram_3.vhd bram_loader.vhd bram_export.vhd binary_search.vhd
 TOP_ENTITY=tb_fsm
 
 

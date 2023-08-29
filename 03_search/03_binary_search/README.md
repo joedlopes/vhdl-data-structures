@@ -38,8 +38,8 @@ def binary_search(
         # tick
         if target > val_mid:
             idx_left = idx_middle
-        elif target < val_mid:
-            idx_right = idx_middle
+        # elif target < val_mid:
+        #     idx_right = idx_middle
         else:
             idx_right = idx_middle  # when equal, search for left most
     
@@ -94,39 +94,4 @@ From the following algorithm we can derive the following requirements:
    In VHDL we have the logical operator srl:
    "11111111" srl 1
 
-
-Based on the previous requirements we can adapt the python code:
-
-```python
-def binary_search(bram: List[int], 
-                  idx_left: int,
-                  idx_right: int,
-                  target: int,
-) -> Tuple[int, int]:
-    idx_middle: int
-
-    while idx_left != idx_right:
-        idx_middle = (idx_right - idx_left) >> 1
-        idx_middle = (idx_right - idx_left) >> 1
-        
-        val_mid = bram[idx_middle]
-
-        if target < val_mid:
-            idx_right = idx_middle
-        elif target > val_mid:
-            idx_left = idx_mid
-        else:
-            idx_left = idx_middle
-            idx_right = idx_middle
-
-    return idx_left, bram[idx_left]
-```
-
-0  1   2   3   4   5   6   7
-0, 30, 20, 20, 20, 50, 60, 70
-
-t = 25
-L = 0
-R = 7
-M = (0 + 7) // 2 = 3
 

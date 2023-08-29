@@ -65,8 +65,9 @@ def binary_search(
         print("HIGH RANGE")
         return len(bram)-1, bram[len(bram)-1]
 
-    while idx_left < idx_right - 2:
+    # while idx_left < idx_right - 2:
 
+    while idx_right - idx_left > 2:
         idx_middle = (idx_left >> 1) + (idx_right >> 1)
         val_mid = bram[idx_middle]
 
