@@ -45,15 +45,10 @@ architecture behav of binary_search is
     signal CURRENT_STATE: SEARCH_STATES := STATE_IDLE;
     signal address : integer range 0 to 255 := 0;
     
-    signal diff_debug : integer range 0 to 255 := 0;
-
-    signal bram_value2 : integer range 0 to 255 := 0;
+    signal target: integer range 0 to 255 := 0;
+    signal bram_value : integer range 0 to 255 := 0;
 
     constant MAX_LENGTH : integer := 255;
-
-
-    signal val_left : integer range 0 to 255 := 0;
-    signal val_right : integer range 0 to 255 := 0;
 begin
     
     bram_raddr <= std_logic_vector(to_unsigned(address, bram_raddr'length));
@@ -62,33 +57,23 @@ begin
     bram_wdata <= "00000000";
     found <= '0';
 
-    
+    bram_value <= to_integer(unsigned(bram_rdata));
+    target <= to_integer(unsigned(target_value));
 
     process(clk, ena)
         variable idx_left   : integer range 0 to 255 := 0;
         variable idx_right  : integer range 0 to 255 := MAX_LENGTH;
         variable diff       : integer range 0 to 255 := 0;
 
-        variable min_val    : integer range 0 to 255 := 0;
-        variable max_val    : integer range 0 to 255 := 0;
-
-        variable target     : integer range 0 to 255 := 0;
-        variable bram_value : integer range 0 to 255 := 0;
-
+        -- variable sig_left   : unsigned(7 downto 0) := "00000000";
+        -- variable sig_right  : unsigned(7 downto 0) := "11111111";
     begin
-        diff_debug <= diff;
-        bram_value2 <= bram_value;
-        
         if ena = '0' then
             CURRENT_STATE <= STATE_IDLE;
             rdy <= '0';
             address <= 0;
 
         elsif falling_edge(clk) then
-
-            bram_value := to_integer(unsigned(bram_rdata));
-            target := to_integer(unsigned(target_value));
-
             case CURRENT_STATE is
                 when STATE_IDLE =>
                     CURRENT_STATE <= STATE_PREPARE;
@@ -114,69 +99,43 @@ begin
                         CURRENT_STATE <= STATE_LOOP;
                     end if;
                     
-                    diff := idx_right - idx_left;
+                    -- diff := idx_right/2 - idx_left/2;
+                    
+                    -- sig_left := to_unsigned(idx_left, bram_raddr'length);
+                    -- address <=  to_integer(unsigned(idx_left) srl 1);
+                            -- + shift_right(to_unsigned(idx_right, 8), 1);
 
                 when STATE_LOOP =>
                     
                     if diff > 2 then
-                        CURRENT_STATE <= STATE_LOOP;
-                        
-                        if target > bram_value then
-                            idx_left := address;
-                        else
-                            idx_right := address;
-                        end if;
-                        
-                        address <= to_integer(to_unsigned(idx_left,8) srl 1) + to_integer(to_unsigned(idx_right,8) srl 1);
-                        diff := idx_right - idx_left;
-                    else
-                        
                         CURRENT_STATE <= STATE_CHECK_MIDDLE;
                         if address = idx_left then
                             address <= address + 1;
                         elsif address = idx_right then
                             address <= address - 1;
                         end if;
+
+                    else
+                        CURRENT_STATE <= STATE_LOOP;
+                        diff := idx_right - idx_left;
+
+                        if bram_value > target then
+                            idx_left := address;
+                        else
+                            idx_right := address;
+                        end if;
                         
+                        -- address <= (idx_left srl 1) + (idx_right srl 1); 
                     end if;
 
                 when STATE_CHECK_MIDDLE =>
-                    CURRENT_STATE <= STATE_CHECK_LEFT;
-
-                    if target < bram_value then
-                        idx_right := address;
-                    else
-                        idx_left := address;
-                    end if;
-                    address <= idx_left;
+                    CURRENT_STATE <= STATE_LOOP;
 
                 when STATE_CHECK_LEFT =>
-                    
-                    if bram_value = target then
-                        CURRENT_STATE <= STATE_RDY;
-                    else
-                        address <= idx_right;
-                        min_val := bram_value;
-                        CURRENT_STATE <= STATE_CHECK_RIGHT;
-                    end if;
+                    CURRENT_STATE <= STATE_LOOP;
 
                 when STATE_CHECK_RIGHT =>
-
-                    if bram_value = target then
-                        CURRENT_STATE <= STATE_RDY;
-                    else
-                        max_val := bram_value;
-                        CURRENT_STATE <= STATE_MINMAX;
-                    end if;
-
-                when STATE_MINMAX =>
-                    CURRENT_STATE <= STATE_RDY;
-
-                    if (target - min_val) > (max_val - target) then
-                        address <= idx_right;
-                    else
-                        address <= idx_left;
-                    end if;
+                    CURRENT_STATE <= STATE_LOOP;
                     
                 when STATE_RDY =>
                     CURRENT_STATE <= STATE_RDY;
@@ -189,9 +148,6 @@ begin
 
             
         end if;
-
-        val_left <= idx_left;
-        val_right <= idx_right;
 
     end process;
 

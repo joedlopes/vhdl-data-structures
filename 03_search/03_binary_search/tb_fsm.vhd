@@ -104,7 +104,7 @@ architecture behav of tb_fsm is
     signal dut_ena              : std_logic;
     signal dut_rdy              : std_logic;
     signal dut_found            : std_logic;
-    signal dut_target_value     : std_logic_vector(7 downto 0) := "00110001";
+    signal dut_target_value     : std_logic_vector(7 downto 0) := "00100001";
 
     signal dut_we               : std_logic                    := '0';
     signal dut_waddr            : std_logic_vector(7 downto 0) := "00001111";
